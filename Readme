@@ -1,3 +1,9 @@
 File	       Root level	                Module level
 variables.tf   Accepts inputs from you	    Accepts inputs from the root
 outputs.tf	   Shows results to you	       Sends results back to root
+
+#Terraform installation
+wget https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
+unzip terraform_1.9.8_linux_amd64.zip
+sudo mv terraform /usr/local/bin/
+terraform -v
