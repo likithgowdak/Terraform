@@ -16,8 +16,15 @@ resource "aws_security_group" "bastion" {
     protocol    = "tcp"
     cidr_blocks = [var.my_ip_cidr]  # your IP
   }
-  egress { from_port = 0; to_port=0; protocol="-1"; cidr_blocks=["0.0.0.0/0"] }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
+
 
 module "ec2" {
   source = "./modules/ec2"
