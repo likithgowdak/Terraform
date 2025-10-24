@@ -2,8 +2,104 @@ File	       Root level	                Module level
 variables.tf   Accepts inputs from you	    Accepts inputs from the root
 outputs.tf	   Shows results to you	       Sends results back to root
 
-#Terraform installation
+Terraform installation
 wget https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip
 unzip terraform_1.9.8_linux_amd64.zip
 sudo mv terraform /usr/local/bin/
 terraform -v
+
+
+| Command                       | Purpose                                                 | Example                       | Notes / Tips                                                  |
+| ----------------------------- | ------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------- |
+| `terraform version`           | Check Terraform version                                 | `terraform version`           | Always confirm your version before starting a new project     |
+| `terraform init`              | Initializes Terraform in the current directory          | `terraform init`              | Downloads provider plugins, sets up backend (S3, local, etc.) |
+| `terraform init -reconfigure` | Reinitializes backend if you changed S3/DynamoDB config | `terraform init -reconfigure` | Useful when switching backend configs                         |
+
+
+| Command                    | Purpose                          | Example                    | Notes / Tips                                        |
+| -------------------------- | -------------------------------- | -------------------------- | --------------------------------------------------- |
+| `terraform fmt -recursive` | Formats all `.tf` files properly | `terraform fmt -recursive` | Keeps code clean & consistent                       |
+| `terraform validate`       | Validates syntax and logic       | `terraform validate`       | Checks for missing vars, invalid blocks             |
+| `terraform providers`      | Lists all providers used         | `terraform providers`      | Helps confirm AWS provider version and modules used |
+| `terraform graph`          | Visualizes resource dependencies | `terraform graph`          | Can be piped to `dot` to generate diagrams          |
+
+
+| Command                    | Purpose                          | Example                    | Notes / Tips                                        |
+| -------------------------- | -------------------------------- | -------------------------- | --------------------------------------------------- |
+| `terraform fmt -recursive` | Formats all `.tf` files properly | `terraform fmt -recursive` | Keeps code clean & consistent                       |
+| `terraform validate`       | Validates syntax and logic       | `terraform validate`       | Checks for missing vars, invalid blocks             |
+| `terraform providers`      | Lists all providers used         | `terraform providers`      | Helps confirm AWS provider version and modules used |
+| `terraform graph`          | Visualizes resource dependencies | `terraform graph`          | Can be piped to `dot` to generate diagrams          |
+
+| Command                                     | Purpose                                         | Example                                      | Notes / Tips                    |
+| ------------------------------------------- | ----------------------------------------------- | -------------------------------------------- | ------------------------------- |
+| `terraform plan`                            | Shows what Terraform will create/change/destroy | `terraform plan`                             | Safe “dry run” before apply     |
+| `terraform plan -var-file=envs/dev.tfvars`  | Uses custom variable file                       | `terraform plan -var-file=envs/dev.tfvars`   | Always use with environments    |
+| `terraform apply`                           | Actually builds/updates infrastructure          | `terraform apply`                            | Prompts confirmation by default |
+| `terraform apply -auto-approve`             | Skips interactive confirmation                  | `terraform apply -auto-approve`              | ⚠️ Be careful — no confirmation |
+| `terraform apply -var-file=envs/dev.tfvars` | Apply using environment-specific variables      | `terraform apply -var-file=envs/prod.tfvars` | For dev/prod separation         |
+
+| Command                           | Purpose                                  | Example                                 | Notes / Tips                             |
+| --------------------------------- | ---------------------------------------- | --------------------------------------- | ---------------------------------------- |
+| `terraform show`                  | Shows current state details              | `terraform show`                        | Useful for debugging                     |
+| `terraform state list`            | Lists all resources managed by Terraform | `terraform state list`                  | Shows what’s tracked in state            |
+| `terraform state show <resource>` | Shows details of a specific resource     | `terraform state show aws_instance.web` | Helps find outputs or dependencies       |
+| `terraform output`                | Displays module outputs                  | `terraform output`                      | Use after apply to get instance IP, etc. |
+| `terraform output -json`          | Outputs in JSON format                   | `terraform output -json`                | For scripting/automation                 |
+
+| Command                                       | Purpose                              | Example                                        | Notes / Tips                |
+| --------------------------------------------- | ------------------------------------ | ---------------------------------------------- | --------------------------- |
+| `terraform destroy`                           | Destroys all managed resources       | `terraform destroy`                            | Frees AWS costs when done   |
+| `terraform destroy -var-file=envs/dev.tfvars` | Destroy using a specific environment | `terraform destroy -var-file=envs/prod.tfvars` | Matches how you applied     |
+| `terraform destroy -auto-approve`             | Destroy without confirmation         | `terraform destroy -auto-approve`              | ⚠️ Dangerous; use with care |
+
+| Command                          | Purpose                   | Example                          | Notes / Tips                       |
+| -------------------------------- | ------------------------- | -------------------------------- | ---------------------------------- |
+| `terraform workspace new dev`    | Create new workspace      | `terraform workspace new prod`   | Each workspace keeps its own state |
+| `terraform workspace select dev` | Switch workspace          | `terraform workspace select dev` | Use before plan/apply              |
+| `terraform workspace list`       | List all workspaces       | `terraform workspace list`       | Shows active one (*)               |
+| `terraform workspace show`       | Display current workspace | `terraform workspace show`       | Confirms your current env          |
+
+| Command                         | Purpose                                | Example                               | Notes / Tips                                |
+| ------------------------------- | -------------------------------------- | ------------------------------------- | ------------------------------------------- |
+| `terraform state pull`          | Download remote state                  | `terraform state pull > state.json`   | Backup state manually                       |
+| `terraform state push`          | Upload local state to backend          | `terraform state push state.json`     | Use only if state corruption happens        |
+| `terraform state rm <resource>` | Remove a resource from state (not AWS) | `terraform state rm aws_instance.web` | Stops tracking resource without deleting it |
+| `terraform refresh`             | Refresh state to match real infra      | `terraform refresh`                   | Syncs with actual AWS environment           |
+
+| Command                                            | Purpose                       | Example                                              | Notes / Tips                       |
+| -------------------------------------------------- | ----------------------------- | ---------------------------------------------------- | ---------------------------------- |
+| `terraform init -backend-config="bucket=mybucket"` | Override backend at init time | `terraform init -backend-config="region=ap-south-1"` | Handy for CI/CD automation         |
+| `terraform state pull`                             | View current remote state     | `terraform state pull`                               | Confirms state in S3               |
+| `terraform init -migrate-state`                    | Move state from local to S3   | `terraform init -migrate-state`                      | Used when first setting up backend |
+
+| Command                            | Purpose                                        | Example                                    | Notes / Tips                |
+| ---------------------------------- | ---------------------------------------------- | ------------------------------------------ | --------------------------- |
+| `terraform taint <resource>`       | Marks a resource for recreation                | `terraform taint aws_instance.web`         | Next apply recreates it     |
+| `terraform untaint <resource>`     | Undo taint                                     | `terraform untaint aws_instance.web`       | Cancel recreation           |
+| `terraform import <resource> <id>` | Bring existing AWS resource into Terraform     | `terraform import aws_vpc.main vpc-123abc` | For adopting existing infra |
+| `terraform plan -destroy`          | Preview what will be destroyed                 | `terraform plan -destroy`                  | Safer before destroying all |
+| `terraform apply -refresh-only`    | Refresh local state without changing resources | `terraform apply -refresh-only`            | Used to sync drift only     |
+
+🔥 Common Real-Life Terraform Workflow Summary
+# 1. Initialize project and backend
+terraform init
+
+# 2. Format and validate code
+terraform fmt -recursive
+terraform validate
+
+# 3. Select workspace (dev or prod)
+terraform workspace select dev
+
+# 4. Plan resources for that env
+terraform plan -var-file=envs/dev.tfvars
+
+# 5. Apply configuration
+terraform apply -var-file=envs/dev.tfvars
+
+# 6. See outputs (like public IP)
+terraform output
+
+# 7. Destroy when no longer needed
+terraform destroy -var-file=envs/dev.tfvars
